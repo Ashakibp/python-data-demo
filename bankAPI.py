@@ -1,5 +1,6 @@
 from CollectionModule import mongo_test
 import time
+from cleanData import clean_data
 
 
 class Bank_Api(object):
@@ -9,9 +10,10 @@ class Bank_Api(object):
         self.banks = mongo_test.collection_manager("banks", "banks")
         self.transactions = mongo_test.collection_manager("banks", "transactions")
         self.branches = mongo_test.collection_manager("banks", "branches")
+        self.data_cleaner = clean_data()
 
     def login(self, username, password):
-        username_query = self.users.find_query({"username":username})
+        username_query = self.users.find_query({"username": username})
         if len(username_query) == 1 and username_query[0]["password"] == password:
             logged_in_user = username_query[0]
             return logged_in_user
@@ -84,6 +86,10 @@ class Bank_Api(object):
                         {"_id": other_user_obj["_id"]},
                         {"$set": {"transactions": trans_two}}
                     )
+                    x = []
+                    for trans in self.transactions.find_query({"sender":logged_in_user["_id"]}):
+                        x.append(trans)
+                    self.data_cleaner.get_transactions(x)
                     return True
         return False
 

@@ -30,7 +30,7 @@ class QueryFinder(object):
             id_bank = l_one[0]
             id_number = id_bank["_id"]
             client.change_collection("transactions")
-            returner = client.find_query({ "user_id" : str(id_number) })
+            returner = client.find_query({"user_id": str(id_number) })
             print(returner)
             if not returner:
                 return "No Transaction Results"
