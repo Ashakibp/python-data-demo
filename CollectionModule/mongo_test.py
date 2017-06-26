@@ -1,4 +1,3 @@
-import pymongo
 from pymongo import MongoClient
 
 
@@ -11,7 +10,6 @@ class collection_manager(object):
     def find_query(self, query):
         r_query = []
         l = self.collection.find(query)
-        print(l)
         for x in l:
             r_query.append(x)
         return r_query
@@ -31,3 +29,8 @@ class collection_manager(object):
     def change_collection(self, name):
         self.collection = self.db.get_collection(name)
 
+    def update_query(self, query1, query2):
+        self.collection.update(query1, query2)
+
+    def add_query(self, query):
+        self.collection.save(query)

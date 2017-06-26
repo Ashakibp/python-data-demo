@@ -1,1 +1,1 @@
-from CollectionModule import mongo_test
+from pymongo import MongoClient
