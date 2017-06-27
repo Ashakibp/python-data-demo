@@ -89,7 +89,7 @@ class Bank_Api(object):
                     x = []
                     for trans in self.transactions.find_query({"sender":logged_in_user["_id"]}):
                         x.append(trans)
-                    self.data_cleaner.get_transactions(x)
+                    self.data_cleaner.get_transactions(x, 10)
                     return True
         return False
 
