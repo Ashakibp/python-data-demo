@@ -1,14 +1,30 @@
 from CollectionModule.mongo_test import collection_manager
+from bson import ObjectId
 
 class clean_data(object):
 
+    def __init__(self):
+        pass
+
     def get_transactions(self, transactions):
         trans = []
-        db = collection_manager("bank", "users")
-        for transaction in transactions:
+        db = collection_manager("banks", "users")
+        for transaction in reversed(transactions):
             sender_identity = transaction["sender"]
-            print(sender_identity)
-
+            receiver_identity = transaction["receiver"]
+            amount = transaction["amount"]
+            send_Obj = db.find_query({"_id" : sender_identity})[0]
+            receive_obj = db.find_query({"_id": receiver_identity})[0]
+            send_name = send_Obj["fullname"]
+            receive_name = receive_obj["fullname"]
+            print(send_name, " paid ", amount, " to ", receive_name)
+            data_dict = {}
+            data_dict["sender_name"] = send_name
+            data_dict["receiver_name"] = receive_name
+            data_dict["amount"] = amount
+            data_dict["date"] = transaction["timestamp"]
+            trans.append(data_dict)
+        print(trans)
 
 
     #Gallery card transaction note
