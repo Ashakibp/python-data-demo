@@ -11,8 +11,42 @@ class clean_data(object):
     '''
     Title => Account transfer of xxx$
     Subtitle => xxx$ transfered from sender_name to recieved_name
-    Button => Click here to view more 
+    Button => Click here to view more
+    username,password => [{'save_variables': [{'user_id': 'bla_bla', 'balance': ''}]}]
     '''
+
+    def generate_gallery_card_from_list(self, list_name, data):
+        gal_card =   {
+            "attachment":{
+            "type":"template",
+            "payload":{
+                "template_type":"generic",
+                    "elements":[
+                    ]
+                }
+            }
+        }
+        for entry in data:
+            element_list = gal_card["attachment"]["payload"]["elements"]
+            element = {
+                "title": "{0}",
+                "buttons": [
+                    {
+                        "type": "web_url",
+                        "url": "https://google.com",
+                        "title": "click here to view more"
+                    }
+                ]
+            }
+
+            element["title"] = entry
+            element_list.append(element)
+
+        return [gal_card]
+
+
+
+
 
     def generate_gallery_card_transaction(self, transactions):
         gal_card =   {
@@ -51,7 +85,7 @@ class clean_data(object):
             element["title"] = title
             element["subtitle"] = subtitle
             element_list.append(element)
-        print(json.dumps(gal_card))
+        return [gal_card]
 
     def get_transactions(self, transactions, amounts):
         trans = []
@@ -67,7 +101,6 @@ class clean_data(object):
             receive_obj = db.find_query({"_id": receiver_identity})[0]
             send_name = send_Obj["fullname"]
             receive_name = receive_obj["fullname"]
-            print(send_name, " paid ", amount, " to ", receive_name)
             data_dict = {}
             data_dict["sender_name"] = send_name
             data_dict["receiver_name"] = receive_name

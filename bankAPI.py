@@ -16,28 +16,38 @@ class Bank_Api(object):
         username_query = self.users.find_query({"username": username})
         if len(username_query) == 1 and username_query[0]["password"] == password:
             logged_in_user = username_query[0]
-            return logged_in_user
-        return None
+            dict_r = {}
+            dict_r["save_variables"] = [{"user_id":logged_in_user["_id"], "balance": logged_in_user["balance"]}]
+            return [dict_r]
+        dict = {}
+        dict["text"] = "Invalid login try again"
+        return [dict]
 
-    def refresh(self, username, password):
-        login = self.login(username, password)
-        if login is not None:
+    def refresh(self, user_id):
+        login_check = self.users.find_query({"_id":user_id})
+        if len(login_check) == 1:
+            login = login_check[0]
             return login
+        else:
+            dict = {}
+            dict["text"] = "Invalid login try again"
+            return [dict]
 
-    def get_balance(self, username, password):
-        login = self.login(username, password)
-        if login is not None:
-            return login["balance"]
-
-    def find_branches(self, username, password):
-        logged_in = self.login(username, password)
+    def find_branches(self, user_id):
+        logged_in = None
+        login_check = self.users.find_query({"_id": user_id})
+        if login_check is not []:
+            logged_in = login_check[0]
         if logged_in is not None:
-            branches = self.banks.find_query({"_id":self.login(username, password)["bank_id"]})["branches"]
+            branches = self.banks.find_query({"_id": logged_in["bank_id"]})["branches"]
             bran_list = []
             for branch in branches:
                 bran_list.append(self.branches.find_query({"_id":branch})[0])
-            return bran_list
-        return False
+            branch_card = self.data_cleaner.generate_gallery_card_transaction(bran_list)
+            return [branch_card]
+        dict = {}
+        dict["text"] = "Invalid login try again"
+        return [dict]
 
     def get_bank(self, text):
         pass
@@ -75,7 +85,7 @@ class Bank_Api(object):
                     )
                     trans_one = logged_in_user["transactions"]
                     trans_two = other_user_obj["transactions"]
-                    trans_id = self.add_transaction_to_db(logged_in_user["_id"],other_user_obj["_id"], amount)
+                    trans_id = self.add_transaction_to_db(logged_in_user["_id"], other_user_obj["_id"], amount)
                     trans_one.append(trans_id)
                     trans_two.append(trans_id)
                     self.users.update_query(
@@ -86,13 +96,15 @@ class Bank_Api(object):
                         {"_id": other_user_obj["_id"]},
                         {"$set": {"transactions": trans_two}}
                     )
-                    x = []
-                    for trans in self.transactions.find_query({"sender":logged_in_user["_id"]}):
-                        x.append(trans)
-                    self.data_cleaner.get_transactions(x, 10)
-                    return True
-        return False
+                    text = {}
+                    text["text"] = "Transaction Successful"
+                    return [text]
+        text = {}
+        text["text"] = "Error with transaction"
+        return [text]
 
+
+    def get_transactions(self, user_id, number):
 
 
 
