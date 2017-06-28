@@ -1,9 +1,10 @@
 from CollectionModule import mongo_test
 import time
 from cleanData import clean_data
-from bottle import run, get, response, post
+from bottle import run, get, response, post, request
 import json
-
+from bson import objectid
+import copy
 
 class Bank_Api(object):
 
@@ -112,23 +113,40 @@ class Bank_Api(object):
 
 
     def get_transactions(self, user_id, number):
-
+        if number == 0:
+            number = 10
+        user_obj = self.users.find_query({"_id": user_id})[0]
+        trans_list = copy.deepcopy(user_obj["transactions"])
+        gal_card = self.data_cleaner.get_transactions(trans_list, number)
+        return gal_card
 
 response.content_type = 'application/json'
 
 x = Bank_Api()
 
-@get("/login/username/<username>/password/<password>")
-def do_login(username, password):
-    c = x.login(username, password)
+@post("/login")
+def do_login():
+    c = x.login(request.json.get('username'), request.json.get('password'))
     response.content_type = 'application/json'
     return json.dumps(c)
 
-@post("/transaction/user_id/<user_id>/other_username/<other_username>/amount/<amount>")
-def do_transaction(user_id, other_username, amount):
+@post("/transaction")
+def do_transaction():
+    user_id = objectid.ObjectId(request.json.get('user_id'))
+    other_username = request.json.get('other_username')
+    amount = int(request.json.get('amount'))
     response.content_type = 'application/json'
     c = x.make_transaction(user_id, other_username, amount)
     return json.dumps(c)
+
+@post("/getTransactions")
+def get_trans():
+    user_id = objectid.ObjectId(request.json.get('user_id'))
+    amount = int(request.json.get('amount'))
+    response.content_type = 'application/json'
+    c = x.get_transactions(user_id, amount)
+    return json.dumps(c)
+
 
 
 

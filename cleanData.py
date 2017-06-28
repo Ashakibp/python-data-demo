@@ -90,10 +90,12 @@ class clean_data(object):
     def get_transactions(self, transactions, amounts):
         trans = []
         db = collection_manager("banks", "users")
+        db_trans = collection_manager("banks", "transactions")
         if amounts == 0:
             amounts = 10
         for transaction in reversed(transactions):
             amounts = amounts - 1
+            transaction = db_trans.find_query({"_id": ObjectId(transaction)})[0]
             sender_identity = transaction["sender"]
             receiver_identity = transaction["receiver"]
             amount = transaction["amount"]
@@ -110,7 +112,7 @@ class clean_data(object):
             trans.append(data_dict)
             if amounts == 0:
                 break
-        self.generate_gallery_card_transaction(trans)
+        return self.generate_gallery_card_transaction(trans)
 
 
 """    
