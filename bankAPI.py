@@ -1,6 +1,8 @@
 from CollectionModule import mongo_test
 import time
 from cleanData import clean_data
+from bottle import run, get, response, post
+import json
 
 
 class Bank_Api(object):
@@ -17,7 +19,7 @@ class Bank_Api(object):
         if len(username_query) == 1 and username_query[0]["password"] == password:
             logged_in_user = username_query[0]
             dict_r = {}
-            dict_r["save_variables"] = [{"user_id":logged_in_user["_id"], "balance": logged_in_user["balance"]}]
+            dict_r["save_variables"] = [{"user_id":str(logged_in_user["_id"]), "balance": logged_in_user["balance"]}]
             return [dict_r]
         dict = {}
         dict["text"] = "Invalid login try again"
@@ -32,6 +34,11 @@ class Bank_Api(object):
             dict = {}
             dict["text"] = "Invalid login try again"
             return [dict]
+
+    def get_balance(self, user_id):
+        user = self.refresh(user_id)
+        return user["balance"]
+
 
     def find_branches(self, user_id):
         logged_in = None
@@ -64,16 +71,16 @@ class Bank_Api(object):
         trans_obj = self.transactions.find_query(query)[0]
         return trans_obj["_id"]
 
-    def make_transaction(self, username, password, other_username, amount):
-        logged_in_user = self.login(username, password)
+    def make_transaction(self, user_id, other_username, amount):
+        logged_in_user = self.refresh(user_id)
         if logged_in_user is not None:
             other_user = self.users.find_query({"username": other_username})
             if len(other_user) == 1:
                 other_user_obj = other_user[0]
-                if not self.get_balance(username, password) - amount >= 0:
+                if not self.get_balance(user_id) - amount >= 0:
                     return False
                 else:
-                    existing_balance = self.get_balance(username, password) - amount
+                    existing_balance = self.get_balance(user_id) - amount
                     transfer_balance = other_user_obj["balance"] + amount
                     self.users.update_query(
                         {"_id": logged_in_user["_id"]},
@@ -107,11 +114,26 @@ class Bank_Api(object):
     def get_transactions(self, user_id, number):
 
 
-
-
-
+response.content_type = 'application/json'
 
 x = Bank_Api()
-print(x.get_balance("sleeze", "121213"))
-prof = x.make_transaction("sleeze", "121213","ashak", 100)
-print(x.get_balance("sleeze", "121213"))
+
+@get("/login/username/<username>/password/<password>")
+def do_login(username, password):
+    c = x.login(username, password)
+    response.content_type = 'application/json'
+    return json.dumps(c)
+
+@post("/transaction/user_id/<user_id>/other_username/<other_username>/amount/<amount>")
+def do_transaction(user_id, other_username, amount):
+    response.content_type = 'application/json'
+    c = x.make_transaction(user_id, other_username, amount)
+    return json.dumps(c)
+
+
+
+
+
+run(host='localhost', port=8080, debug=True)
+
+
