@@ -19,12 +19,12 @@ class Bank_Api(object):
         username_query = self.users.find_query({"username": username})
         if len(username_query) == 1 and username_query[0]["password"] == password:
             logged_in_user = username_query[0]
-            dict_r = {}
-            dict_r["save_variables"] = [{"user_id":str(logged_in_user["_id"]), "balance": logged_in_user["balance"]}]
-            return [dict_r]
-        dict = {}
-        dict["text"] = "Invalid login try again"
-        return [dict]
+            return_dict = {}
+            return_dict["save_variables"] = [{"user_id":str(logged_in_user["_id"]), "balance": logged_in_user["balance"]}]
+            return [return_dict]
+        return_dict = {}
+        return_dict["text"] = "Invalid login try again"
+        return [return_dict]
 
     def refresh(self, user_id):
         login_check = self.users.find_query({"_id":user_id})
@@ -32,9 +32,9 @@ class Bank_Api(object):
             login = login_check[0]
             return login
         else:
-            dict = {}
-            dict["text"] = "Invalid login try again"
-            return [dict]
+            return_dict = {}
+            return_dict["text"] = "Invalid login try again"
+            return [return_dict]
 
     def get_balance(self, user_id):
         user = self.refresh(user_id)
@@ -54,13 +54,13 @@ class Bank_Api(object):
                     bran_list.append(self.branches.find_query({"_id":branch})[0])
                 branch_card = self.data_cleaner.generate_gallery_card_transaction(bran_list)
                 return [branch_card]
-            dict = {}
-            dict["text"] = "Invalid login try again"
-            return [dict]
+            return_dict = {}
+            return_dict["text"] = "Invalid login try again"
+            return [return_dict]
         except:
-            rdict = {}
-            rdict["text"] = "Error finding branches, please try again later."
-            return [rdict]
+            return_dict = {}
+            return_dict["text"] = "Error finding branches, please try again later."
+            return [return_dict]
 
     def get_bank(self, text):
         pass
@@ -109,12 +109,12 @@ class Bank_Api(object):
                         {"_id": other_user_obj["_id"]},
                         {"$set": {"transactions": trans_two}}
                     )
-                    text = {}
-                    text["text"] = "Transaction Successful"
-                    return [text]
-        text = {}
-        text["text"] = "Error with transaction"
-        return [text]
+                    return_text = {}
+                    return_text["return_text"] = "Transaction Successful"
+                    return [return_text]
+        return_text = {}
+        return_text["return_text"] = "Error with transaction"
+        return [return_text]
 
 
     def get_transactions(self, user_id, number):
@@ -127,13 +127,13 @@ class Bank_Api(object):
 
 response.content_type = 'application/json'
 
-x = Bank_Api()
+bank_obj = Bank_Api()
 
 @post("/login")
 def do_login():
-    c = x.login(request.json.get('username'), request.json.get('password'))
+    login_data = bank_obj.login(request.json.get('username'), request.json.get('password'))
     response.content_type = 'application/json'
-    return json.dumps(c)
+    return json.dumps(login_data)
 
 @post("/transaction")
 def do_transaction():
@@ -141,22 +141,22 @@ def do_transaction():
     other_username = request.json.get('other_username')
     amount = int(request.json.get('amount'))
     response.content_type = 'application/json'
-    c = x.make_transaction(user_id, other_username, amount)
-    return json.dumps(c)
+    trans_response = bank_obj.make_transaction(user_id, other_username, amount)
+    return json.dumps(trans_response)
 
 @post("/getTransactions")
 def get_trans():
     user_id = objectid.ObjectId(request.json.get('user_id'))
     amount = int(request.json.get('amount'))
     response.content_type = 'application/json'
-    c = x.get_transactions(user_id, amount)
-    return json.dumps(c)
+    trans_data = bank_obj.get_transactions(user_id, amount)
+    return json.dumps(trans_data)
 
 @post("/getBranches")
 def get_branches():
     user_id = objectid.ObjectId(request.json.get('user_id'))
     response.content_type = 'application/json'
-    return json.dumps(x.find_branches(user_id))
+    return json.dumps(bank_obj.find_branches(user_id))
 
 
 

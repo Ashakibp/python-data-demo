@@ -113,22 +113,3 @@ class clean_data(object):
             if amounts == 0:
                 break
         return self.generate_gallery_card_transaction(trans)
-
-
-"""    
-             
-        {
-            "title":"Welcome to Peter\'s Hats",
-            "subtitle":"We\'ve got the right hat for everyone.",
-            "buttons":[
-              {
-                "type":"web_url",
-                "url":"https://google.com",
-                "title":"click here to view more"
-              } 
-            ]      
-          }
-          
-          
-          
-"""
