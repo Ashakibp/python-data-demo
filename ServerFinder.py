@@ -1,6 +1,6 @@
 import cherrypy
 import json
-from CollectionModule.mongo_test import collection_manager
+from CollectionModule.mongo_db_handler import collection_manager
 
 
 

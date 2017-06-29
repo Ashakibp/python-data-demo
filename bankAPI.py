@@ -1,4 +1,4 @@
-from CollectionModule import mongo_test
+from CollectionModule import mongo_db_handler
 import time
 from cleanData import clean_data
 from bottle import run, get, response, post, request
@@ -9,10 +9,10 @@ import copy
 class Bank_Api(object):
 
     def __init__(self):
-        self.users = mongo_test.collection_manager("banks", "users")
-        self.banks = mongo_test.collection_manager("banks", "banks")
-        self.transactions = mongo_test.collection_manager("banks", "transactions")
-        self.branches = mongo_test.collection_manager("banks", "branches")
+        self.users = mongo_db_handler.collection_manager("banks", "users")
+        self.banks = mongo_db_handler.collection_manager("banks", "banks")
+        self.transactions = mongo_db_handler.collection_manager("banks", "transactions")
+        self.branches = mongo_db_handler.collection_manager("banks", "branches")
         self.data_cleaner = clean_data()
 
     def login(self, username, password):
@@ -42,20 +42,25 @@ class Bank_Api(object):
 
 
     def find_branches(self, user_id):
-        logged_in = None
-        login_check = self.users.find_query({"_id": user_id})
-        if login_check is not []:
-            logged_in = login_check[0]
-        if logged_in is not None:
-            branches = self.banks.find_query({"_id": logged_in["bank_id"]})["branches"]
-            bran_list = []
-            for branch in branches:
-                bran_list.append(self.branches.find_query({"_id":branch})[0])
-            branch_card = self.data_cleaner.generate_gallery_card_transaction(bran_list)
-            return [branch_card]
-        dict = {}
-        dict["text"] = "Invalid login try again"
-        return [dict]
+        try:
+            logged_in = None
+            login_check = self.users.find_query({"_id": user_id})
+            if login_check is not []:
+                logged_in = login_check[0]
+            if logged_in is not None:
+                branches = self.banks.find_query({"_id": logged_in["bank_id"]})["branches"]
+                bran_list = []
+                for branch in branches:
+                    bran_list.append(self.branches.find_query({"_id":branch})[0])
+                branch_card = self.data_cleaner.generate_gallery_card_transaction(bran_list)
+                return [branch_card]
+            dict = {}
+            dict["text"] = "Invalid login try again"
+            return [dict]
+        except:
+            rdict = {}
+            rdict["text"] = "Error finding branches, please try again later."
+            return [rdict]
 
     def get_bank(self, text):
         pass
@@ -147,6 +152,11 @@ def get_trans():
     c = x.get_transactions(user_id, amount)
     return json.dumps(c)
 
+@post("/getBranches")
+def get_branches():
+    user_id = objectid.ObjectId(request.json.get('user_id'))
+    response.content_type = 'application/json'
+    return json.dumps(x.find_branches(user_id))
 
 
 
