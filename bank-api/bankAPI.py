@@ -1,10 +1,11 @@
-from CollectionModule import mongo_db_handler
-import time
-from cleanData import clean_data
-from bottle import run, get, response, post, request
-import json
-from bson import objectid
 import copy
+import json
+import time
+from CollectionModule import mongo_db_handler
+from bottle import run, response, post, request
+from bson import objectid
+from cleanData import clean_data
+
 
 class Bank_Api(object):
 
@@ -23,7 +24,7 @@ class Bank_Api(object):
             return_dict["save_variables"] = [{"user_id":str(logged_in_user["_id"]), "balance": logged_in_user["balance"]}]
             return [return_dict]
         return_dict = {}
-        return_dict["text"] = "Invalid login try again"
+        return_dict["go_to_block"] = "69eeeb9a-fff9-445c-a16c-f34d9f3f0d65"
         return [return_dict]
 
     def refresh(self, user_id):
@@ -43,16 +44,18 @@ class Bank_Api(object):
 
     def find_branches(self, user_id):
         try:
-            logged_in = None
             login_check = self.users.find_query({"_id": user_id})
             if login_check is not []:
                 logged_in = login_check[0]
-            if logged_in is not None:
-                branches = self.banks.find_query({"_id": logged_in["bank_id"]})["branches"]
+                bank_id = objectid.ObjectId(logged_in["bank_id"])
+                valid_bank = self.banks.find_query({"_id": bank_id})
+                valid_bank = valid_bank[0]
+                branches = valid_bank["branches"]
                 bran_list = []
                 for branch in branches:
+                    branch = objectid.ObjectId(branch)
                     bran_list.append(self.branches.find_query({"_id":branch})[0])
-                branch_card = self.data_cleaner.generate_gallery_card_transaction(bran_list)
+                branch_card = self.data_cleaner.generate_branch_card(bran_list)
                 return [branch_card]
             return_dict = {}
             return_dict["text"] = "Invalid login try again"

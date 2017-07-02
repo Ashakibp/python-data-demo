@@ -1,9 +1,12 @@
 from pymongo import MongoClient
 
 
+PORT = 27017
+MONGO_CONNECTION_STRING = "localhost"
+
 class collection_manager(object):
     def __init__(self, db_name, collection_name):
-        client = MongoClient('localhost', 27017)
+        client = MongoClient(MONGO_CONNECTION_STRING, PORT)
         self.db = client[db_name]
         self.collection = self.db.get_collection(collection_name)
 

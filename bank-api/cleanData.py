@@ -1,7 +1,7 @@
+import time
 from CollectionModule.mongo_db_handler import collection_manager
 from bson import ObjectId
-import time
-import json
+
 
 class clean_data(object):
 
@@ -113,3 +113,47 @@ class clean_data(object):
             if amounts == 0:
                 break
         return self.generate_gallery_card_transaction(trans)
+
+
+    def generate_branch_card(self, branchArray):
+        gal_card =   {
+            "attachment":{
+            "type":"template",
+            "payload":{
+                "template_type":"generic",
+                    "elements":[
+                    ]
+                }
+            }
+        }
+        for branch in branchArray:
+            element_list = gal_card["attachment"]["payload"]["elements"]
+            title = "{0} branch located at of {1}".format(branch["name"], branch["location"])
+            subtitle = "branch ID is: {0}".format(str(branch["branch_id"]))
+
+            element = {
+                "title": "{0}",
+                "subtitle": "{1}",
+                "buttons": [
+                    {
+                        "type": "web_url",
+                        "url": "https://google.com",
+                        "title": "click here to view more"
+                    }
+                ]
+            }
+
+            element["title"] = title
+            element["subtitle"] = subtitle
+            element_list.append(element)
+        return [gal_card]
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,4 @@
 import cherrypy
-import json
 from CollectionModule.mongo_db_handler import collection_manager
 
 
