@@ -47,4 +47,4 @@ class QueryFinder(object):
 
 if __name__ == '__main__':
     cherrypy.quickstart(QueryFinder())
-    #QueryFinder().run_matcher("Aaron")
+    QueryFinder().run_matcher("Aaron")
